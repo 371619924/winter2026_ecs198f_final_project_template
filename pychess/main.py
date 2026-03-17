@@ -19,7 +19,7 @@ font = pygame.font.SysFont(None, 50)
 Chess Game Logic and Chess Board Initalization
 """
 logic = ChessLogic()
-board = Board(WINDOW_SIZE[0], WINDOW_SIZE[1], logic)
+board = Board(screen, WINDOW_SIZE[0], WINDOW_SIZE[1], logic)
 
 def draw(display, font):
     """
@@ -29,7 +29,6 @@ def draw(display, font):
         display: Pygame Screen Object
         font: Pygame Font Object
     """
-    display.fill("white")
     board.draw(display, font)
     pygame.display.update()
 
@@ -37,6 +36,7 @@ if __name__ == "__main__":
     """
     Game Loop
     """
+    draw(screen, font)
     running = True
     while running:
         mx, my = pygame.mouse.get_pos()
@@ -46,4 +46,5 @@ if __name__ == "__main__":
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     board.handle_click(mx, my)
-        draw(screen, font)
+        pygame.display.update()
+        

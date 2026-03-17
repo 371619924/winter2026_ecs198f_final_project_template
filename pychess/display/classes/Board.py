@@ -6,7 +6,7 @@ from display.classes.Piece import Piece
 from logic.chess_logic import ChessLogic
 
 class Board:
-    def __init__(self, width: int, height: int, logic: ChessLogic):
+    def __init__(self, screen: pygame.Surface, width: int, height: int, logic: ChessLogic):
         """
         Object representing the Chess Board
 
@@ -16,6 +16,8 @@ class Board:
             logic (ChessLogic): ChessLogic object which implements the Chess Game Logic 
                 (i.e. Board Representation, Move Making Logic)
         """
+        self.screen = screen
+        
         self.width = width
         self.height = height
         self.tile_width = width // 8
@@ -25,8 +27,8 @@ class Board:
         self.logic = logic
         self.squares: list[Square] = self.generate_squares()
 
-        self.start_pos = ""
-        self.end_pos = ""
+        self.start_square = None
+        self.end_square = None
 
     def generate_squares(self):
         """
@@ -71,14 +73,24 @@ class Board:
         y = my // self.tile_height
         clicked_square = self.get_square_from_pos((x, y))
         if clicked_square is not None:
-            if self.start_pos == "":
-                self.start_pos = clicked_square.get_coord()
-            elif self.end_pos == "":
-                self.end_pos = clicked_square.get_coord()
-                if self.start_pos != self.end_pos:
-                    self.logic.play_move(f"{self.start_pos}{self.end_pos}")
-                self.start_pos = ""
-                self.end_pos = ""
+            # first click
+            if self.start_square is None:
+                self.start_square = clicked_square
+                self.start_square.highlight = True
+                self.start_square.draw(self.screen)
+            
+            # second click / try playing move
+            elif self.end_square is None:
+                self.end_square = clicked_square
+                if self.start_square != self.end_square:
+                    self.logic.play_move(f"{self.start_square.get_coord()}{self.end_square.get_coord()}")
+
+                # reset clicked areas
+                self.start_square.highlight = False
+                self.start_square.draw(self.screen)
+                self.start_square = None
+                self.end_square.draw(self.screen)
+                self.end_square = None
     
     def draw(self, display, font):
         """
@@ -88,7 +100,6 @@ class Board:
             display: Pygame Screen Object
             font: Pygame Font Object
         """
-        self.squares = self.generate_squares()
         for square in self.squares:
             square.draw(display)
         if self.logic.result != "":
