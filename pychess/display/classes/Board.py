@@ -54,6 +54,9 @@ class Board:
         """
         Update all Square Objects of the Chess Board by placing pieces based on the ChessLogic Board Representation
         """
+        # print("logic board:", self.logic.board)
+        # print("visual board:", self.current_board)
+
         for y in range(8):      # loop through every row
             for x in range(8):  # loop through every column
                 piece = None
@@ -64,6 +67,7 @@ class Board:
                         # make this visual square's piece a new piece
                         piece = Piece(self.logic.board[y][x], self.tile_width, self.tile_height)
                 self.squares[y * 8 + x].set_occuping_piece(piece)
+                self.current_board[y][x] = self.logic.board[y][x]
 
     def get_square_from_pos(self, pos: tuple[int, int]) -> Square | None:
         """
