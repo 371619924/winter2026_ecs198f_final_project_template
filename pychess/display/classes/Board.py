@@ -7,7 +7,7 @@ from display.classes.Piece import Piece
 from logic.chess_logic import ChessLogic
 
 class Board:
-    def __init__(self, screen: pygame.Surface, width: int, height: int, logic: ChessLogic):
+    def __init__(self, screen: pygame.Surface, width: int, height: int, logic: ChessLogic, font: pygame.font.Font):
         """
         Object representing the Chess Board
 
@@ -18,6 +18,7 @@ class Board:
                 (i.e. Board Representation, Move Making Logic)
         """
         self.screen = screen
+        self.font = font
         
         self.width = width
         self.height = height
@@ -31,6 +32,8 @@ class Board:
 
         self.start_square = None
         self.end_square = None
+
+        # self.debug = ""
 
     def generate_squares(self):
         """
@@ -86,6 +89,9 @@ class Board:
             mx (int): Absolute x coordinate of click
             my (int): Absolute y coordinate of click
         """
+        if self.logic.result != "":
+            return
+
         x = mx // self.tile_width
         y = my // self.tile_height
         clicked_square = self.get_square_from_pos((x, y))
@@ -111,18 +117,14 @@ class Board:
                 self.end_square = None
 
                 # update visual
-                self.draw(self.screen, None)
+                self.draw()
     
-    def draw(self, display, font):
+    def draw(self):
         """
         Draws the Board, with result message if applicable, on Pygame Screen
-
-        Args:
-            display: Pygame Screen Object
-            font: Pygame Font Object
         """
         for square in self.squares:
-            square.draw(display)
+            square.draw(self.screen)
         if self.logic.result != "":
             white = (255, 255, 255)
             black = (0, 0, 0)
@@ -134,14 +136,14 @@ class Board:
                 message = "White wins"
             elif self.logic.result == "b":
                 message = "Black wins"
-            text_surface = font.render(message, True, white)
+            text_surface = self.font.render(message, True, white)
             text_rect = text_surface.get_rect(center=(self.width // 2, self.height // 2))
             rect_width = text_rect.width + 40
             rect_height = text_rect.height + 20
             rect_x = text_rect.x - 20
             rect_y = text_rect.y - 10
 
-            pygame.draw.rect(display, gray, (rect_x, rect_y, rect_width, rect_height))
-            pygame.draw.rect(display, red, (rect_x, rect_y, rect_width, rect_height), 3)
+            pygame.draw.rect(self.screen, gray, (rect_x, rect_y, rect_width, rect_height))
+            pygame.draw.rect(self.screen, red, (rect_x, rect_y, rect_width, rect_height), 3)
 
-            display.blit(text_surface, text_rect)
+            self.screen.blit(text_surface, text_rect)
