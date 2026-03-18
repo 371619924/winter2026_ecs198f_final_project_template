@@ -35,12 +35,12 @@ class ChessLogic:
         # for testing
         # self.board = [
         #     ['',  '',  '',  '',  '',  '',  '',  '' ],
-        #     ['',  '',  '',  '', '',  '', '',  '' ],
-        #     ['',  '',  '', '',  '',  '',  '',  '' ],
+        #     ['P',  'R',  'Q',  'B', 'K',  '', '',  '' ],
+        #     ['',  'N',  '', '',  '',  '',  '',  '' ],
         #     ['',  '',  '',  '',  '',  '',  '',  '' ],
-        #     ['',  '',  '', '',  'K', '',  '',  '' ],
-        #     ['',  '',  '',  '', '',  '', '',  '' ],
-        #     ['',  '',  '',  '',  '',  '',  '',  '' ],
+        #     ['',  '',  '', '',  '', '',  '',  '' ],
+        #     ['',  'n',  '',  '', '',  '', '',  '' ],
+        #     ['p',  'r',  'q',  'b',  'k',  '',  '',  '' ],
         #     ['',  '',  '',  '',  '',  '',  '',  '' ],
         # ]
 
@@ -375,7 +375,7 @@ class ChessLogic:
             # skip over empty spaces
             if board[check_y][check_x] == "":
                 continue
-            print(f"({check_x}, {check_y})")
+            # print(f"({check_x}, {check_y})")
 
             # dont worry about turn's own piece
             if (self._is_black(board[check_y][check_x]) and turn == "b") or \
@@ -408,7 +408,7 @@ class ChessLogic:
             # skip over empty spaces
             if board[check_y][check_x] == "":
                 continue
-            print(f"({check_x}, {check_y})")
+            # print(f"({check_x}, {check_y})")
 
             # dont worry about turn's own piece
             if (self._is_black(board[check_y][check_x]) and turn == "b") or \
@@ -534,6 +534,14 @@ class ChessLogic:
 
         # return move notation
         notation = self._build_notation(piece, start, end, capture)
+
+        # handle pawn promotion
+        if er == 0 and piece == "P":
+            # print("promotion white")
+            self.board[er][ec] = "Q"
+        elif er == 7 and piece == "p":
+            # print("promotion black")
+            self.board[er][ec] = "q"
 
         self.turn = "b" if self.turn == "w" else "w"
 
