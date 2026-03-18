@@ -173,9 +173,9 @@ class ChessLogic:
                     return (y, x)
         return None
     
-    def _turns_king_in_check(self, simulated_board:list[list[str]]):
-        king_pos = self._get_piece_position(simulated_board,
-            "k" if self.turn == "b" else "K"
+    def _turns_king_in_check(self, board:list[list[str]], turn:str):
+        king_pos = self._get_piece_position(board,
+            "k" if turn == "b" else "K"
         )
         if king_pos is None:
             return None
@@ -185,17 +185,17 @@ class ChessLogic:
         for y in range(king_y-1, -1, -1):
             # print("up check")
             # skip over empty spaces
-            if simulated_board[y][king_x] == "":
+            if board[y][king_x] == "":
                 continue
             # print("y:", y)
             
             # dont worry about turn's own piece
-            if (self._is_black(simulated_board[y][king_x]) and self.turn == "b") or \
-                (self._is_white(simulated_board[y][king_x]) and self.turn == "w"):
+            if (self._is_black(board[y][king_x]) and turn == "b") or \
+                (self._is_white(board[y][king_x]) and turn == "w"):
                 break
             # print("piece is opponent's piece")
             
-            piece = simulated_board[y][king_x].lower()
+            piece = board[y][king_x].lower()
             # print("piece:", piece)
 
             # dont worry about these pieces
@@ -214,17 +214,17 @@ class ChessLogic:
         # check below
         for y in range(king_y+1, 8, 1):
             # print("down check")
-            if simulated_board[y][king_x] == "":
+            if board[y][king_x] == "":
                 continue
             # print("y:", y)
 
             # dont worry about turn's own piece
-            if (self._is_black(simulated_board[y][king_x]) and self.turn == "b") or \
-                (self._is_white(simulated_board[y][king_x]) and self.turn == "w"):
+            if (self._is_black(board[y][king_x]) and turn == "b") or \
+                (self._is_white(board[y][king_x]) and turn == "w"):
                 break
             # print("piece is opponent's piece")
             
-            piece = simulated_board[y][king_x].lower()
+            piece = board[y][king_x].lower()
             # print("piece:", piece)
 
             # dont worry about these pieces
@@ -244,17 +244,17 @@ class ChessLogic:
         for x in range(king_x-1, -1, -1):
             # print("left check")
             # skip over empty spaces
-            if simulated_board[king_y][x] == "":
+            if board[king_y][x] == "":
                 continue
             # print("x:", x)
             
             # dont worry about turn's own piece
-            if (self._is_black(simulated_board[king_y][x]) and self.turn == "b") or \
-                (self._is_white(simulated_board[king_y][x]) and self.turn == "w"):
+            if (self._is_black(board[king_y][x]) and turn == "b") or \
+                (self._is_white(board[king_y][x]) and turn == "w"):
                 break
             # print("piece is opponent's piece")
             
-            piece = simulated_board[king_y][x].lower()
+            piece = board[king_y][x].lower()
             # print("piece:", piece)
 
             # dont worry about these pieces
@@ -274,17 +274,17 @@ class ChessLogic:
         for x in range(king_x+1, 8, 1):
             # print("right check")
             # skip over empty spaces
-            if simulated_board[king_y][x] == "":
+            if board[king_y][x] == "":
                 continue
             # print("x:", x)
             
             # dont worry about turn's own piece
-            if (self._is_black(simulated_board[king_y][x]) and self.turn == "b") or \
-                (self._is_white(simulated_board[king_y][x]) and self.turn == "w"):
+            if (self._is_black(board[king_y][x]) and turn == "b") or \
+                (self._is_white(board[king_y][x]) and turn == "w"):
                 break
             # print("piece is opponent's piece")
             
-            piece = simulated_board[king_y][x].lower()
+            piece = board[king_y][x].lower()
             # print("piece:", piece)
 
             # dont worry about these pieces
@@ -307,17 +307,17 @@ class ChessLogic:
             check_y = king_y - diag
 
             # skip over empty spaces
-            if simulated_board[check_y][check_x] == "":
+            if board[check_y][check_x] == "":
                 continue
             # print(f"({check_x}, {check_y})")
 
             # dont worry about turn's own piece
-            if (self._is_black(simulated_board[check_y][check_x]) and self.turn == "b") or \
-                (self._is_white(simulated_board[check_y][check_x]) and self.turn == "w"):
+            if (self._is_black(board[check_y][check_x]) and turn == "b") or \
+                (self._is_white(board[check_y][check_x]) and turn == "w"):
                 break
             # print("piece is opponent's piece")
             
-            piece = simulated_board[check_y][check_x].lower()
+            piece = board[check_y][check_x].lower()
             # print("piece:", piece)
 
             # dont worry about these pieces
@@ -326,7 +326,7 @@ class ChessLogic:
             # print("piece not pawn, knight, or bishop")
             
             # check if king or pawn piece in range
-            if (piece == "k" or (piece == "p" and self.turn == "w")) and check_x != (king_x - 1) and check_y != (king_y - 1):
+            if (piece == "k" or (piece == "p" and turn == "w")) and check_x != (king_x - 1) and check_y != (king_y - 1):
                 break
 
             # piece will be a bishop or queen, therefore in check
@@ -340,17 +340,17 @@ class ChessLogic:
             check_y = king_y - diag
 
             # skip over empty spaces
-            if simulated_board[check_y][check_x] == "":
+            if board[check_y][check_x] == "":
                 continue
             # print(f"({check_x}, {check_y})")
 
             # dont worry about turn's own piece
-            if (self._is_black(simulated_board[check_y][check_x]) and self.turn == "b") or \
-                (self._is_white(simulated_board[check_y][check_x]) and self.turn == "w"):
+            if (self._is_black(board[check_y][check_x]) and turn == "b") or \
+                (self._is_white(board[check_y][check_x]) and turn == "w"):
                 break
             # print("piece is opponent's piece")
             
-            piece = simulated_board[check_y][check_x].lower()
+            piece = board[check_y][check_x].lower()
             # print("piece:", piece)
 
             # dont worry about these pieces
@@ -359,7 +359,7 @@ class ChessLogic:
             # print("piece not pawn, knight, or bishop")
             
             # check if king or pawn piece in range
-            if (piece == "k" or (piece == "p" and self.turn == "w")) and check_x != (king_x + 1) and check_y != (king_y - 1):
+            if (piece == "k" or (piece == "p" and turn == "w")) and check_x != (king_x + 1) and check_y != (king_y - 1):
                 break
 
             # piece will be a bishop or queen, therefore in check
@@ -373,17 +373,17 @@ class ChessLogic:
             check_y = king_y + diag
 
             # skip over empty spaces
-            if simulated_board[check_y][check_x] == "":
+            if board[check_y][check_x] == "":
                 continue
             print(f"({check_x}, {check_y})")
 
             # dont worry about turn's own piece
-            if (self._is_black(simulated_board[check_y][check_x]) and self.turn == "b") or \
-                (self._is_white(simulated_board[check_y][check_x]) and self.turn == "w"):
+            if (self._is_black(board[check_y][check_x]) and turn == "b") or \
+                (self._is_white(board[check_y][check_x]) and turn == "w"):
                 break
             # print("piece is opponent's piece")
             
-            piece = simulated_board[check_y][check_x].lower()
+            piece = board[check_y][check_x].lower()
             # print("piece:", piece)
 
             # dont worry about these pieces
@@ -392,7 +392,7 @@ class ChessLogic:
             # print("piece not pawn, knight, or bishop")
             
             # check if king or pawn piece in range
-            if (piece == "k" or (piece == "p" and self.turn == "b")) and check_x != (king_x - 1) and check_y != (king_y + 1):
+            if (piece == "k" or (piece == "p" and turn == "b")) and check_x != (king_x - 1) and check_y != (king_y + 1):
                 break
 
             # piece will be a bishop or queen, therefore in check
@@ -406,17 +406,17 @@ class ChessLogic:
             check_y = king_y + diag
 
             # skip over empty spaces
-            if simulated_board[check_y][check_x] == "":
+            if board[check_y][check_x] == "":
                 continue
             print(f"({check_x}, {check_y})")
 
             # dont worry about turn's own piece
-            if (self._is_black(simulated_board[check_y][check_x]) and self.turn == "b") or \
-                (self._is_white(simulated_board[check_y][check_x]) and self.turn == "w"):
+            if (self._is_black(board[check_y][check_x]) and turn == "b") or \
+                (self._is_white(board[check_y][check_x]) and turn == "w"):
                 break
             # print("piece is opponent's piece")
             
-            piece = simulated_board[check_y][check_x].lower()
+            piece = board[check_y][check_x].lower()
             # print("piece:", piece)
 
             # dont worry about these pieces
@@ -425,7 +425,7 @@ class ChessLogic:
             # print("piece not pawn, knight, or bishop")
             
             # check if king or pawn piece in range
-            if (piece == "k" or (piece == "p" and self.turn == "b")) and check_x != (king_x + 1) and check_y != (king_y + 1):
+            if (piece == "k" or (piece == "p" and turn == "b")) and check_x != (king_x + 1) and check_y != (king_y + 1):
                 break
 
             # piece will be a bishop or queen, therefore in check
@@ -444,15 +444,15 @@ class ChessLogic:
             if (king_x + change_x) >= 8 or (king_x + change_x) < 0 or \
                 (king_y + change_y) >= 8 or (king_y + change_y) < 0:
                 continue
-            piece = simulated_board[king_y + change_y][king_x + change_x]
+            piece = board[king_y + change_y][king_x + change_x]
 
             # only worry about knights
             if piece.lower() != "n":
                 continue
 
             # check if its turn's own piece, if so then in check
-            if (self._is_black(piece) and self.turn == "w") or \
-                (self._is_white(piece) and self.turn == "b"):
+            if (self._is_black(piece) and turn == "w") or \
+                (self._is_white(piece) and turn == "b"):
                 print("will be in check")
                 return True
         
@@ -523,7 +523,7 @@ class ChessLogic:
         simulated_board = copy.deepcopy(self.board)
         simulated_board[er][ec] = piece
         simulated_board[sr][sc] = ""
-        if self._turns_king_in_check(simulated_board):
+        if self._turns_king_in_check(simulated_board, self.turn):
             return ""
 
         # perform move
