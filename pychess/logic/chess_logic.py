@@ -21,31 +21,35 @@ class ChessLogic:
 
             '' - Game In Progress
         """
-        self.board = [
-            ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
-            ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
-            ['',  '',  '',  '',  '',  '',  '',  '' ],
-            ['',  '',  '',  '',  '',  '',  '',  '' ],
-            ['',  '',  '',  '',  '',  '',  '',  '' ],
-            ['',  '',  '',  '',  '',  '',  '',  '' ],
-            ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'],
-            ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'],
-        ]
+        # self.board = [
+        #     ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
+        #     ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
+        #     ['',  '',  '',  '',  '',  '',  '',  '' ],
+        #     ['',  '',  '',  '',  '',  '',  '',  '' ],
+        #     ['',  '',  '',  '',  '',  '',  '',  '' ],
+        #     ['',  '',  '',  '',  '',  '',  '',  '' ],
+        #     ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'],
+        #     ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'],
+        # ]
 
         # for testing
-        # self.board = [
-        #     ['',  '',  '',  '',  '',  '',  '',  '' ],
-        #     ['P',  'R',  'Q',  'B', 'K',  '', '',  '' ],
-        #     ['',  'N',  '', '',  '',  '',  '',  '' ],
-        #     ['',  '',  '',  '',  '',  '',  '',  '' ],
-        #     ['',  '',  '', '',  '', '',  '',  '' ],
-        #     ['',  'n',  '',  '', '',  '', '',  '' ],
-        #     ['p',  'r',  'q',  'b',  'k',  '',  '',  '' ],
-        #     ['',  '',  '',  '',  '',  '',  '',  '' ],
-        # ]
+        self.board = [
+            ['',  '',  '',  'k', '',  '',  '',  '' ],
+            ['',  '',  '',  'r', 'r', '',  '',  '' ],
+            ['',  '',  '',  '',  '',  '',  '',  '' ],
+            ['',  '',  'P', '',  '',  'P', '',  '' ],
+            ['',  '',  'p', '',  '',  'p', '',  '' ],
+            ['',  '',  '',  '',  '',  '',  '',  '' ],
+            ['',  '',  '',  'R', 'R', '',  '',  '' ],
+            ['',  '',  '',  'K', '',  '',  '',  '' ],
+        ]
 
         self.result = ""
         self.turn = "w"
+
+        self.just_moved_x = None
+        self.just_moved_y = None
+        self.en_passant = False
 
     def _coord_to_index(self, coord: str):
         if len(coord) != 2:
@@ -101,6 +105,7 @@ class ChessLogic:
         dr = er - sr
         dc = ec - sc
 
+        # handle moving "forward"
         if dc == 0:
             if target != "":
                 return False
@@ -111,8 +116,23 @@ class ChessLogic:
                 return self.board[middle_row][sc] == ""
             return False
 
+        # handle moving "forward" diagonally to capture
         if abs(dc) == 1 and dr == direction:
-            return target != "" and not self._same_color(piece, target)
+            en_passant_is_pawn = (self.board[er-direction][ec].lower() == "p")
+            # if not en_passant_is_pawn:
+            #     print("you cant en passant a non-pawn")
+            
+            en_passant_enemy = (not self._same_color(piece, self.board[er-direction][ec]))
+            # if not en_passant_enemy:
+            #     print("cant en passant an ally")
+
+            en_passant_just_moved = (ec == self.just_moved_x and er-direction == self.just_moved_y)
+            # if not en_passant_just_moved:
+            #     print("pawn you're trying to en passant didn't move last turn")
+
+            self.en_passant = (target == "" and en_passant_just_moved and en_passant_enemy and en_passant_is_pawn)
+
+            return (target != "" and not self._same_color(piece, target)) or self.en_passant
 
         return False
 
@@ -527,10 +547,16 @@ class ChessLogic:
             return ""
 
         # perform move
-        capture = target != ""
+        capture = (target != "") or self.en_passant
+        self.just_moved_x = ec
+        self.just_moved_y = er
 
         self.board[er][ec] = piece
         self.board[sr][sc] = ""
+
+        # handle en passant
+        if self.en_passant:
+            self.board[er-1 if self.turn == "b" else er+1][ec] = ""
 
         # return move notation
         notation = self._build_notation(piece, start, end, capture)
@@ -544,6 +570,9 @@ class ChessLogic:
             self.board[er][ec] = "q"
 
         self.turn = "b" if self.turn == "w" else "w"
+        self.en_passant = False
+
+        # print("board:", self.board)
 
         # print("Move:", notation)
         return notation
