@@ -35,12 +35,12 @@ class ChessLogic:
         # for testing
         self.board = [
             ['',  '',  '',  'k', '',  '',  '',  '' ],
-            ['',  '',  '',  'r', 'r', '',  '',  '' ],
+            ['',  '',  '',  'p', 'p', '',  '',  '' ],
             ['',  '',  '',  '',  '',  '',  '',  '' ],
             ['',  '',  'P', '',  '',  'P', '',  '' ],
             ['',  '',  'p', '',  '',  'p', '',  '' ],
             ['',  '',  '',  '',  '',  '',  '',  '' ],
-            ['',  '',  '',  'R', 'R', '',  '',  '' ],
+            ['',  '',  '',  'P', 'P', '',  '',  '' ],
             ['',  '',  '',  'K', '',  '',  '',  '' ],
         ]
 
@@ -95,6 +95,21 @@ class ChessLogic:
             c += step_c
 
         return True
+    
+    def _valid_en_passant(self, piece:str, target:str, check_row:int, check_col:int):
+        en_passant_is_pawn = (self.board[check_row][check_col].lower() == "p")
+        # if not en_passant_is_pawn:
+        #     print("you cant en passant a non-pawn")
+        
+        en_passant_enemy = (not self._same_color(piece, self.board[check_row][check_col]))
+        # if not en_passant_enemy:
+        #     print("cant en passant an ally")
+
+        en_passant_just_moved = (check_col == self.just_moved_x and check_row == self.just_moved_y)
+        # if not en_passant_just_moved:
+        #     print("pawn you're trying to en passant didn't move last turn")
+
+        return (target == "" and en_passant_just_moved and en_passant_enemy and en_passant_is_pawn)
 
     def _valid_pawn_move(
         self, piece: str, sr: int, sc: int, er: int, ec: int, target: str
@@ -118,19 +133,7 @@ class ChessLogic:
 
         # handle moving "forward" diagonally to capture
         if abs(dc) == 1 and dr == direction:
-            en_passant_is_pawn = (self.board[er-direction][ec].lower() == "p")
-            # if not en_passant_is_pawn:
-            #     print("you cant en passant a non-pawn")
-            
-            en_passant_enemy = (not self._same_color(piece, self.board[er-direction][ec]))
-            # if not en_passant_enemy:
-            #     print("cant en passant an ally")
-
-            en_passant_just_moved = (ec == self.just_moved_x and er-direction == self.just_moved_y)
-            # if not en_passant_just_moved:
-            #     print("pawn you're trying to en passant didn't move last turn")
-
-            self.en_passant = (target == "" and en_passant_just_moved and en_passant_enemy and en_passant_is_pawn)
+            self.en_passant = self._valid_en_passant(piece, target, er-direction, ec)
 
             return (target != "" and not self._same_color(piece, target)) or self.en_passant
 
