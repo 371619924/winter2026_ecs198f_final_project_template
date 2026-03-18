@@ -91,7 +91,7 @@ class Board:
         clicked_square = self.get_square_from_pos((x, y))
         if clicked_square is not None:
             # first click
-            if self.start_square is None and clicked_square.occupying_piece is not None:
+            if self.start_square is None and clicked_square.occupying_piece is not None and clicked_square.occupying_piece.color == self.logic.turn:
                 self.start_square = clicked_square
                 self.start_square.highlight = True
                 self.start_square.draw(self.screen)
