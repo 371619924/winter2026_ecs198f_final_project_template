@@ -1,4 +1,5 @@
 import pygame
+import copy
 
 from display.classes.Square import Square
 from display.classes.Piece import Piece
@@ -25,6 +26,7 @@ class Board:
         self.selected_piece = None
 
         self.logic = logic
+        self.current_board = copy.deepcopy(logic.board)
         self.squares: list[Square] = self.generate_squares()
 
         self.start_square = None
@@ -32,7 +34,7 @@ class Board:
 
     def generate_squares(self):
         """
-        Construct all Square Objects of the Chess Board and place pieces based on the ChessLogic Board Representation
+        Construct all Square Objects of the Chess Board
         """
         output = []
         for y in range(8):
@@ -44,6 +46,21 @@ class Board:
                 square.set_occuping_piece(piece)
                 output.append(square)
         return output
+
+    def update_squares(self):
+        """
+        Update all Square Objects of the Chess Board by placing pieces based on the ChessLogic Board Representation
+        """
+        for y in range(8):      # loop through every row
+            for x in range(8):  # loop through every column
+                piece = None
+                if self.logic.board[y][x] != "":
+                    # make this visual square's piece their current piece
+                    piece = self.squares[y * 8 + x].occupying_piece
+                    if self.logic.board[y][x] != self.current_board[y][x]:
+                        # make this visual square's piece a new piece
+                        piece = Piece(self.logic.board[y][x], self.tile_width, self.tile_height)
+                self.squares[y * 8 + x].set_occuping_piece(piece)
 
     def get_square_from_pos(self, pos: tuple[int, int]) -> Square | None:
         """
@@ -74,16 +91,17 @@ class Board:
         clicked_square = self.get_square_from_pos((x, y))
         if clicked_square is not None:
             # first click
-            if self.start_square is None:
+            if self.start_square is None and clicked_square.occupying_piece is not None:
                 self.start_square = clicked_square
                 self.start_square.highlight = True
                 self.start_square.draw(self.screen)
             
             # second click / try playing move
-            elif self.end_square is None:
+            elif self.start_square is not None and self.end_square is None:
                 self.end_square = clicked_square
                 if self.start_square != self.end_square:
                     self.logic.play_move(f"{self.start_square.get_coord()}{self.end_square.get_coord()}")
+                    self.update_squares()
 
                 # reset clicked areas
                 self.start_square.highlight = False
@@ -91,6 +109,9 @@ class Board:
                 self.start_square = None
                 self.end_square.draw(self.screen)
                 self.end_square = None
+
+                # update visual
+                self.draw(self.screen, None)
     
     def draw(self, display, font):
         """

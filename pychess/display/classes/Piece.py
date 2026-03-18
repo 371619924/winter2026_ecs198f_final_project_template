@@ -10,10 +10,10 @@ class Piece:
                 tile_width (int): Width of Tile Piece is Displayed in
                 tile_height (int): Height of Tile Piece is Displayed in
         """
-        color = "w"
+        self.color = "w"
         if fen_notation.islower():
-            color = "b"
-        piece = fen_notation.lower()
+            self.color = "b"
+        piece_type = fen_notation.lower()
         piece_map = {
             "p": "pawn",
             "r": "rook",
@@ -22,5 +22,5 @@ class Piece:
             "q": "queen",
             "k": "king"
         }
-        self.img = pygame.image.load(os.path.join("display/imgs/", f"{color}_{piece_map[piece]}.png"))
+        self.img = pygame.image.load(os.path.join("display/imgs/", f"{self.color}_{piece_map[piece_type]}.png"))
         self.img = pygame.transform.scale(self.img, (tile_width - 10, tile_height - 10))
