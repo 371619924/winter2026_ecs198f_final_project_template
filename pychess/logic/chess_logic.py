@@ -34,14 +34,14 @@ class ChessLogic:
 
         # for testing
         # self.board = [
-        #     ['',  '',  '',  'R', '',  'R',  '',  '' ],
-        #     ['',  '',  '',  '', '', '',  '',  '' ],
-        #     ['',  '',  'R',  '',  '',  '',  '',  '' ],
-        #     ['',  '',  '', '',  'k',  '', '',  '' ],
-        #     ['',  '',  '', '',  '',  '', 'R',  '' ],
+        #     ['k', '',  '',  '',  '',  '',  '',  'p' ],
+        #     ['',  '',  '',  '',  '',  '',  'P',  '' ],
         #     ['',  '',  '',  '',  '',  '',  '',  '' ],
-        #     ['',  '',  '',  'P', '', '',  '',  '' ],
-        #     ['K',  '',  '',  '', '',  '',  '',  '' ],
+        #     ['',  '',  '',  '',  '',  '',  '',  '' ],
+        #     ['',  '',  '',  '',  '',  '',  '',  '' ],
+        #     ['',  '',  '',  '',  '',  'p',  '',  '' ],
+        #     ['',  '',  '',  '',  '',  '',  '',  '' ],
+        #     ['K', '',  '',  '',  '',  '',  'N',  '' ],
         # ]
 
         self.result = ""
@@ -692,6 +692,17 @@ class ChessLogic:
         self.board[er][ec] = piece
         self.board[sr][sc] = ""
 
+        # handle pawn promotion
+        pawn_promoted = False
+        if er == 0 and piece == "P":
+            # print("promotion white")
+            self.board[er][ec] = "Q"
+            pawn_promoted = True
+        elif er == 7 and piece == "p":
+            # print("promotion black")
+            self.board[er][ec] = "q"
+            pawn_promoted = True
+
         # handle en passant
         if self.en_passant:
             self.board[er-1 if self.turn == "b" else er+1][ec] = ""
@@ -715,16 +726,9 @@ class ChessLogic:
 
         # return move notation
         notation = self._build_notation(piece, start, end, capture)
+        if pawn_promoted:  notation += "=Q"
         if self.castle_king_side:  notation = "O-O"
         if self.castle_queen_side: notation = "O-O-O"
-
-        # handle pawn promotion
-        if er == 0 and piece == "P":
-            # print("promotion white")
-            self.board[er][ec] = "Q"
-        elif er == 7 and piece == "p":
-            # print("promotion black")
-            self.board[er][ec] = "q"
 
         self.turn = "b" if self.turn == "w" else "w"
         self.en_passant = False
