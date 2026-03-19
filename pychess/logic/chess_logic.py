@@ -21,28 +21,28 @@ class ChessLogic:
 
             '' - Game In Progress
         """
-        # self.board = [
-        #     ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
-        #     ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
-        #     ['',  '',  '',  '',  '',  '',  '',  '' ],
-        #     ['',  '',  '',  '',  '',  '',  '',  '' ],
-        #     ['',  '',  '',  '',  '',  '',  '',  '' ],
-        #     ['',  '',  '',  '',  '',  '',  '',  '' ],
-        #     ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'],
-        #     ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'],
-        # ]
+        self.board = [
+            ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
+            ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
+            ['',  '',  '',  '',  '',  '',  '',  '' ],
+            ['',  '',  '',  '',  '',  '',  '',  '' ],
+            ['',  '',  '',  '',  '',  '',  '',  '' ],
+            ['',  '',  '',  '',  '',  '',  '',  '' ],
+            ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'],
+            ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'],
+        ]
 
         # for testing
-        self.board = [
-            ['',  '',  '',  'p', 'p', '',  '',  '' ],
-            ['',  '',  '',  '',  '',  '',  '',  '' ],
-            ['',  '',  'P', '',  '',  'P', '',  '' ],
-            ['',  '',  'p', '',  '',  'p', '',  '' ],
-            ['',  '',  '', '',  '',  '', '',  '' ],
-            ['',  '',  '',  '',  '',  '',  '',  '' ],
-            ['',  '',  '',  'P', 'P', '',  '',  '' ],
-            ['',  '',  '',  'K', '',  '',  '',  '' ],
-        ]
+        # self.board = [
+        #     ['r',  '',  '',  '', 'k',  '',  '',  'r' ],
+        #     ['',  '',  '',  '', 'r', '',  '',  '' ],
+        #     ['',  '',  '',  '',  'r',  '',  '',  '' ],
+        #     ['',  '',  '', '',  'r',  '', '',  '' ],
+        #     ['',  '',  '', '',  'r',  '', '',  '' ],
+        #     ['',  '',  '',  '',  '',  '',  '',  '' ],
+        #     ['',  '',  '',  '', 'R', '',  '',  '' ],
+        #     ['R',  'R',  'R',  'R', 'K',  'R',  'R',  'R' ],
+        # ]
 
         self.result = ""
         self.turn = "w"
@@ -50,6 +50,15 @@ class ChessLogic:
         self.just_moved_x = None
         self.just_moved_y = None
         self.en_passant = False
+
+        self.white_king_moved = False
+        self.white_rook_left_moved = False
+        self.white_rook_right_moved = False
+        self.black_king_moved = False
+        self.black_rook_left_moved = False
+        self.black_rook_right_moved = False
+        self.castle_queen_side = False
+        self.castle_king_side = False
 
     def _coord_to_index(self, coord: str):
         if len(coord) != 2:
@@ -161,11 +170,97 @@ class ChessLogic:
             return self._valid_bishop_move(sr, sc, er, ec)
         return False
 
+    def _valid_castle(self, sr:int, sc:int, er:int, ec:int):
+        if sr != er:
+            # print("castles only happen on the same row")
+            return False
+        
+        castle_king_moved = self.black_king_moved if self.turn == "b" else self.white_king_moved
+        if castle_king_moved:
+            # print("you can't castle a moved king")
+            return False
+        
+        # king side castling
+        dc = ec - sc
+        if dc == 2:
+            target_rook = self.board[sr][ec+1]
+            castle_rook_available = (self.turn == "b" and target_rook == "r") or (self.turn == "w" and target_rook == "R")
+            if not castle_rook_available:
+                # print("king side rook not available")
+                return False
+
+            castle_to_king_side = (self.turn == "b" and not self.black_rook_right_moved) or (self.turn == "w" and not self.white_rook_right_moved)
+            if not castle_to_king_side:
+                # print("you can't castle with a moved king side rook")
+                return False
+
+            # check if area is clear and safe            
+            for i in range(1, 2+1, 1):
+                if self.board[sr][sc+i] != "":
+                    # print("cant king side castle with pieces in the way")
+                    return False
+                
+                # print("castle checking:")
+                simulated_board = copy.deepcopy(self.board)
+                simulated_board[sr][sc+i] = "K" if self.turn == "w" else "k"
+                simulated_board[sr][sc] = ""
+                if self._turns_king_in_check(simulated_board, self.turn):
+                    del simulated_board
+                    # print("cant king side castle when area is in check")
+                    return False
+                del simulated_board
+            self.castle_king_side = True
+            return True
+        
+        # queen side castling
+        elif dc == -3:
+            target_rook = self.board[sr][ec-1]
+            castle_rook_available = (self.turn == "b" and target_rook == "r") or (self.turn == "w" and target_rook == "R")
+            if not castle_rook_available:
+                # print("queen side rook not available")
+                return False
+
+            castle_to_queen_side = (self.turn == "b" and not self.black_rook_left_moved) or (self.turn == "w" and not self.white_rook_left_moved)
+            if not castle_to_queen_side:
+                # print("you can't castle with a moved queen side rook")
+                return False
+            
+            # check if area is clear and safe            
+            for i in range(1, 3+1, 1):
+                if self.board[sr][sc-i] != "":
+                    # print("cant queen side castle with pieces in the way")
+                    return False
+                
+                # print("castle checking:")
+                simulated_board = copy.deepcopy(self.board)
+                simulated_board[sr][sc-i] = "K" if self.turn == "w" else "k"
+                simulated_board[sr][sc] = ""
+                if self._turns_king_in_check(simulated_board, self.turn):
+                    del simulated_board
+                    # print("cant queen side castle when area is in check")
+                    return False
+                del simulated_board
+            self.castle_queen_side = True
+            return True
+        
+        # print("you cant castle there")
+        return False
+
     def _valid_king_move(self, sr: int, sc: int, er: int, ec: int) -> bool:
         dr = abs(er - sr)
-        dc = abs(ec - sc)
-        return max(dr, dc) == 1
+        dc = ec - sc
 
+        # allow if king is only moving one space
+        if max(dr, abs(dc)) == 1:
+            return True
+
+        # castling
+        if er != (0 if self.turn == "b" else 7):
+            # print("castles can only happen on the starting row")
+            return False
+
+        return self._valid_castle(sr, sc, er, ec)
+        
     def _is_valid_piece_move(
         self, piece: str, sr: int, sc: int, er: int, ec: int, target: str
     ) -> bool:
@@ -547,7 +642,9 @@ class ChessLogic:
         simulated_board[er][ec] = piece
         simulated_board[sr][sc] = ""
         if self._turns_king_in_check(simulated_board, self.turn):
+            del simulated_board
             return ""
+        del simulated_board
 
         # perform move
         capture = (target != "") or self.en_passant
@@ -560,9 +657,28 @@ class ChessLogic:
         # handle en passant
         if self.en_passant:
             self.board[er-1 if self.turn == "b" else er+1][ec] = ""
+        
+        # handle castling
+        if self.castle_king_side:
+            self.board[er][ec+1] = ""
+            self.board[er][ec-1] = "r" if self.turn == "b" else "R"
+        elif self.castle_queen_side:
+            self.board[er][ec-1] = ""
+            self.board[er][ec+1] = "r" if self.turn == "b" else "R"
+
+        if   piece == "K":  self.white_king_moved = True
+        elif piece == "k":  self.black_king_moved = True
+        elif piece == "R":
+            if   (sr == 7 and sc == 0):  self.white_rook_left_moved  = True
+            elif (sr == 7 and sc == 7):  self.white_rook_right_moved = True
+        elif piece == "r":
+            if   (sr == 0 and sc == 0):  self.black_rook_left_moved  = True
+            elif (sr == 0 and sc == 7):  self.black_rook_right_moved = True
 
         # return move notation
         notation = self._build_notation(piece, start, end, capture)
+        if self.castle_king_side:  notation = "O-O"
+        if self.castle_queen_side: notation = "O-O-O"
 
         # handle pawn promotion
         if er == 0 and piece == "P":
@@ -574,6 +690,8 @@ class ChessLogic:
 
         self.turn = "b" if self.turn == "w" else "w"
         self.en_passant = False
+        self.castle_queen_side = False
+        self.castle_king_side = False
 
         # print("board:", self.board)
 

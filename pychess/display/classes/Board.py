@@ -110,8 +110,9 @@ class Board:
             elif self.start_square is not None and self.end_square is None:
                 self.end_square = clicked_square
                 if self.start_square != self.end_square:
-                    self.logic.play_move(f"{self.start_square.get_coord()}{self.end_square.get_coord()}")
+                    result = self.logic.play_move(f"{self.start_square.get_coord()}{self.end_square.get_coord()}")
                     self.update_squares()
+                    # print(result)
 
                 # reset clicked areas
                 self.start_square.highlight = False
