@@ -34,14 +34,14 @@ class ChessLogic:
 
         # for testing
         # self.board = [
-        #     ['r',  '',  '',  '', 'k',  '',  '',  'r' ],
-        #     ['',  '',  '',  '', 'r', '',  '',  '' ],
-        #     ['',  '',  '',  '',  'r',  '',  '',  '' ],
-        #     ['',  '',  '', '',  'r',  '', '',  '' ],
-        #     ['',  '',  '', '',  'r',  '', '',  '' ],
+        #     ['',  '',  '',  'R', '',  'R',  '',  '' ],
+        #     ['',  '',  '',  '', '', '',  '',  '' ],
+        #     ['',  '',  'R',  '',  '',  '',  '',  '' ],
+        #     ['',  '',  '', '',  'k',  '', '',  '' ],
+        #     ['',  '',  '', '',  '',  '', 'R',  '' ],
         #     ['',  '',  '',  '',  '',  '',  '',  '' ],
-        #     ['',  '',  '',  '', 'R', '',  '',  '' ],
-        #     ['R',  'R',  'R',  'R', 'K',  'R',  'R',  'R' ],
+        #     ['',  '',  '',  'P', '', '',  '',  '' ],
+        #     ['K',  '',  '',  '', '',  '',  '',  '' ],
         # ]
 
         self.result = ""
@@ -59,6 +59,8 @@ class ChessLogic:
         self.black_rook_right_moved = False
         self.castle_queen_side = False
         self.castle_king_side = False
+
+        self.checking_checkmate = False
 
     def _coord_to_index(self, coord: str):
         if len(coord) != 2:
@@ -326,7 +328,7 @@ class ChessLogic:
                 break
 
             # piece will be a rook or queen, therefore in check
-            print("will be in check")
+            # print("will be in check")
             return True
 
         # check below
@@ -355,7 +357,7 @@ class ChessLogic:
                 break
 
             # piece will be a rook or queen, therefore in check
-            print("will be in check")
+            # print("will be in check")
             return True
 
         # check left
@@ -385,7 +387,7 @@ class ChessLogic:
                 break
 
             # piece will be a rook or queen, therefore in check
-            print("will be in check")
+            # print("will be in check")
             return True
 
         # check right
@@ -415,7 +417,7 @@ class ChessLogic:
                 break
 
             # piece will be a rook or queen, therefore in check
-            print("will be in check")
+            # print("will be in check")
             return True
 
         # check up left
@@ -448,7 +450,7 @@ class ChessLogic:
                 break
 
             # piece will be a bishop or queen, therefore in check
-            print("will be in check")
+            # print("will be in check")
             return True
 
         # check up right
@@ -481,7 +483,7 @@ class ChessLogic:
                 break
 
             # piece will be a bishop or queen, therefore in check
-            print("will be in check")
+            # print("will be in check")
             return True
 
         # check down left
@@ -514,7 +516,7 @@ class ChessLogic:
                 break
 
             # piece will be a bishop or queen, therefore in check
-            print("will be in check")
+            # print("will be in check")
             return True
 
         # check down right
@@ -547,7 +549,7 @@ class ChessLogic:
                 break
 
             # piece will be a bishop or queen, therefore in check
-            print("will be in check")
+            # print("will be in check")
             return True
 
         # check knights
@@ -571,7 +573,7 @@ class ChessLogic:
             # check if its turn's own piece, if so then in check
             if (self._is_black(piece) and turn == "w") or \
                 (self._is_white(piece) and turn == "b"):
-                print("will be in check")
+                # print("will be in check")
                 return True
         
         return False
@@ -581,6 +583,39 @@ class ChessLogic:
         if capture:
             return f"{prefix}{start}x{end}"
         return f"{prefix}{start}{end}"
+    
+    def _turn_in_checkmate(self):
+        king_possible_moves = [
+            (-1, -1), (0, -1), (1, -1),
+            (-1,  0),          (1,  0),
+            (-1,  1), (0,  1), (1,  1)
+        ]
+        king_y, king_x = self._get_piece_position(self.board, "k" if self.turn == "b" else "K")
+        checkmate = True
+        for pos in king_possible_moves:
+            change_x, change_y = pos
+            check_x = king_x + change_x
+            check_y = king_y + change_y
+            #skip invalid positions
+            if (check_x < 0 or check_x > 7) or (check_y < 0 or check_y > 7):
+                continue
+
+            # skip places the king can't move
+            if self.board[check_y][check_x] != "":
+                continue
+            # print(f"checking ({check_x}, {check_y})")
+
+            simulated_board = copy.deepcopy(self.board)
+            simulated_board[check_y][check_x] = "K" if self.turn == "w" else "k"
+            simulated_board[king_y][king_x] = ""
+            sim_king_in_check = self._turns_king_in_check(simulated_board, self.turn)
+            if sim_king_in_check is None:
+                return None
+            elif not sim_king_in_check:
+                checkmate = False
+            del simulated_board
+        
+        return checkmate
 
     def play_move(self, move: str) -> str:
         """
@@ -694,6 +729,12 @@ class ChessLogic:
         self.castle_king_side = False
 
         # print("board:", self.board)
+        
+        if self._turn_in_checkmate():
+            if not self._turns_king_in_check(self.board, self.turn):
+                # print("stalemate")
+                pass
+            self.result = "w" if self.turn == "b" else "b"
 
         # print("Move:", notation)
         return notation
