@@ -587,11 +587,12 @@ class ChessLogic:
     def _turn_in_checkmate(self):
         king_possible_moves = [
             (-1, -1), (0, -1), (1, -1),
-            (-1,  0),          (1,  0),
+            (-1,  0), (0,  0),  (1,  0),
             (-1,  1), (0,  1), (1,  1)
         ]
         king_y, king_x = self._get_piece_position(self.board, "k" if self.turn == "b" else "K")
         checkmate = True
+        empty_places = 0
         for pos in king_possible_moves:
             change_x, change_y = pos
             check_x = king_x + change_x
@@ -601,13 +602,15 @@ class ChessLogic:
                 continue
 
             # skip places the king can't move
-            if self.board[check_y][check_x] != "":
-                continue
+            if pos != (0, 0):
+                if self.board[check_y][check_x] != "":
+                    continue
+                empty_places += 1
             # print(f"checking ({check_x}, {check_y})")
 
             simulated_board = copy.deepcopy(self.board)
-            simulated_board[check_y][check_x] = "K" if self.turn == "w" else "k"
             simulated_board[king_y][king_x] = ""
+            simulated_board[check_y][check_x] = "K" if self.turn == "w" else "k"
             sim_king_in_check = self._turns_king_in_check(simulated_board, self.turn)
             if sim_king_in_check is None:
                 return None
@@ -615,7 +618,7 @@ class ChessLogic:
                 checkmate = False
             del simulated_board
         
-        return checkmate
+        return checkmate and (empty_places > 0)
 
     def play_move(self, move: str) -> str:
         """
